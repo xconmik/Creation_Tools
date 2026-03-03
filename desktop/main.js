@@ -18,6 +18,10 @@ function getLegacyUserConfigPath() {
   return path.join(app.getPath('appData'), 'playwright-registration-qa', 'config.json');
 }
 
+function getAppControlPath() {
+  return path.join(getProjectRoot(), 'config', 'app-control.json');
+}
+
 function parseJsonSafe(rawText) {
   const withoutBom = rawText.replace(/^\uFEFF/, '');
   return JSON.parse(withoutBom);
@@ -41,6 +45,59 @@ function readJsonFileIfExists(filePath) {
 
     return null;
   }
+}
+
+function getDefaultAppControlState() {
+  return {
+    mode: 'enabled',
+    note: 'Up to date',
+    updatedAt: null
+  };
+}
+
+function getAppControlState() {
+  const appControlPath = getAppControlPath();
+  const jsonState = readJsonFileIfExists(appControlPath);
+  if (!jsonState || typeof jsonState !== 'object') {
+    return getDefaultAppControlState();
+  }
+
+  const normalizedMode = String(jsonState.mode || '').trim().toLowerCase() === 'disabled' ? 'disabled' : 'enabled';
+  const note = typeof jsonState.note === 'string' && jsonState.note.trim() ? jsonState.note.trim() : (normalizedMode === 'disabled' ? 'Need to upgrade' : 'Up to date');
+  const updatedAt = typeof jsonState.updatedAt === 'string' ? jsonState.updatedAt : null;
+
+  return {
+    mode: normalizedMode,
+    note,
+    updatedAt
+  };
+}
+
+function writeAppControlState(state) {
+  const appControlPath = getAppControlPath();
+  fs.mkdirSync(path.dirname(appControlPath), { recursive: true });
+  fs.writeFileSync(appControlPath, `${JSON.stringify(state, null, 2)}\n`, 'utf-8');
+  return state;
+}
+
+function toggleAppControlState() {
+  const currentState = getAppControlState();
+  const nextMode = currentState.mode === 'disabled' ? 'enabled' : 'disabled';
+
+  return writeAppControlState({
+    mode: nextMode,
+    note: nextMode === 'disabled' ? 'Need to upgrade' : 'Up to date',
+    updatedAt: new Date().toISOString()
+  });
+}
+
+function assertDesktopEnabled() {
+  const state = getAppControlState();
+  if (state.mode === 'disabled') {
+    throw new Error(state.note || 'Need to upgrade');
+  }
+
+  return state;
 }
 
 function getDefaultConfig() {
@@ -262,7 +319,16 @@ ipcMain.handle('qa:get-initial-config', async () => {
   return getDefaultConfig();
 });
 
+ipcMain.handle('qa:get-app-control-state', async () => {
+  return getAppControlState();
+});
+
+ipcMain.handle('qa:toggle-app-control-state', async () => {
+  return toggleAppControlState();
+});
+
 ipcMain.handle('qa:save-config', async (_event, config) => {
+  assertDesktopEnabled();
   const configPath = getUserConfigPath();
   const configDirPath = path.dirname(configPath);
 
@@ -272,6 +338,7 @@ ipcMain.handle('qa:save-config', async (_event, config) => {
 });
 
 ipcMain.handle('qa:open-results-folder', async () => {
+  assertDesktopEnabled();
   const resultsFolder = app.getPath('userData');
   const error = await shell.openPath(resultsFolder);
 
@@ -283,6 +350,7 @@ ipcMain.handle('qa:open-results-folder', async () => {
 });
 
 ipcMain.handle('qa:get-country-proxies', async (_event, countryCode) => {
+  assertDesktopEnabled();
   const proxies = await fetchCountryProxies(countryCode);
   if (proxies.length === 0) {
     throw new Error(`No public proxies found for ${normalizeCountryCode(countryCode)} right now.`);
@@ -292,6 +360,7 @@ ipcMain.handle('qa:get-country-proxies', async (_event, countryCode) => {
 });
 
 ipcMain.handle('qa:run-tests', async (_event, config) => {
+  assertDesktopEnabled();
   if (runInProgress) {
     throw new Error('A test run is already in progress.');
   }

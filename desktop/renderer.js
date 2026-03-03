@@ -3,10 +3,48 @@ const logsElement = document.getElementById('logs');
 const runButton = document.getElementById('runBtn');
 const saveConfigButton = document.getElementById('saveConfigBtn');
 const openResultsButton = document.getElementById('openResultsBtn');
+const adminToggleButton = document.getElementById('adminToggleBtn');
 const allowedCountriesElement = document.getElementById('allowedCountries');
 const proxiesElement = document.getElementById('proxies');
+const appNoticeElement = document.getElementById('appNotice');
 
 let lastProxyCountryRequest = '';
+let appLocked = false;
+
+function setAppControlUi(state) {
+  const mode = state?.mode === 'disabled' ? 'disabled' : 'enabled';
+  appLocked = mode === 'disabled';
+
+  const note = typeof state?.note === 'string' && state.note.trim()
+    ? state.note.trim()
+    : (appLocked ? 'Need to upgrade' : 'Up to date');
+
+  appNoticeElement.classList.remove('enabled', 'disabled');
+  appNoticeElement.classList.add(mode);
+  appNoticeElement.textContent = appLocked
+    ? `Status: Disabled - ${note}`
+    : `Status: Enabled - ${note}`;
+
+  const controls = document.querySelectorAll('input, select, textarea, button');
+  controls.forEach((control) => {
+    const element = control;
+    if (element.id === 'adminToggleBtn') {
+      element.disabled = false;
+      return;
+    }
+
+    if (element.id === 'openResultsBtn') {
+      element.disabled = appLocked;
+      return;
+    }
+
+    element.disabled = appLocked;
+  });
+
+  if (appLocked) {
+    statusElement.textContent = note;
+  }
+}
 
 function getAvailableCountryCodes() {
   if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
@@ -65,6 +103,10 @@ function getSelectedCountries() {
 }
 
 async function populateRandomProxiesForCountrySelection() {
+  if (appLocked) {
+    return;
+  }
+
   const selectedCountries = getSelectedCountries();
 
   if (selectedCountries.length !== 1) {
@@ -157,6 +199,9 @@ function getConfigFromForm() {
 }
 
 async function initialize() {
+  const appControlState = await window.qaApp.getAppControlState();
+  setAppControlUi(appControlState);
+
   const initialConfig = await window.qaApp.getInitialConfig();
   setFormFromConfig(initialConfig);
 
@@ -176,6 +221,11 @@ async function initialize() {
 }
 
 saveConfigButton.addEventListener('click', async () => {
+  if (appLocked) {
+    statusElement.textContent = 'Need to upgrade';
+    return;
+  }
+
   const config = getConfigFromForm();
   try {
     const savedPath = await window.qaApp.saveConfig(config);
@@ -186,6 +236,11 @@ saveConfigButton.addEventListener('click', async () => {
 });
 
 openResultsButton.addEventListener('click', async () => {
+  if (appLocked) {
+    statusElement.textContent = 'Need to upgrade';
+    return;
+  }
+
   try {
     const folderPath = await window.qaApp.openResultsFolder();
     statusElement.textContent = `Opened results folder: ${folderPath}`;
@@ -194,7 +249,23 @@ openResultsButton.addEventListener('click', async () => {
   }
 });
 
+adminToggleButton.addEventListener('click', async () => {
+  try {
+    const updatedState = await window.qaApp.toggleAppControlState();
+    setAppControlUi(updatedState);
+    statusElement.textContent = `Admin toggle applied: ${updatedState.mode}`;
+    appendLog(`Admin toggle applied: ${updatedState.mode} (${updatedState.note})`);
+  } catch (error) {
+    statusElement.textContent = `Admin toggle failed: ${error.message}`;
+  }
+});
+
 runButton.addEventListener('click', async () => {
+  if (appLocked) {
+    statusElement.textContent = 'Need to upgrade';
+    return;
+  }
+
   logsElement.textContent = '';
   statusElement.textContent = 'Running automation...';
   runButton.disabled = true;

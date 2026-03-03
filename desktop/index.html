@@ -25,6 +25,26 @@
         margin-top: 0;
       }
 
+      #appNotice {
+        margin: 8px 0 14px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      #appNotice.enabled {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #9a3412;
+      }
+
+      #appNotice.disabled {
+        background: #fee2e2;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+      }
+
       .grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -103,6 +123,7 @@
   <body>
     <div class="container">
       <h1>Account Creation App</h1>
+      <div id="appNotice" class="enabled">Status: Enabled - Up to date</div>
 
       <div class="grid">
         <label class="field full">
@@ -192,6 +213,7 @@
       </div>
 
       <div class="actions">
+        <button id="adminToggleBtn" class="secondary">Admin Toggle</button>
         <button id="saveConfigBtn" class="secondary">Save Config</button>
         <button id="openResultsBtn" class="secondary">Open Results Folder</button>
         <button id="runBtn" class="primary">Run Automation</button>

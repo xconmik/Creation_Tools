@@ -8,6 +8,8 @@
     "start": "npm run start:app",
     "start:app": "electron .",
     "start:cli": "node src/index.js",
+    "app:disable": "node scripts/setDesktopAccess.js disable",
+    "app:enable": "node scripts/setDesktopAccess.js enable",
     "build:win": "pkg . --targets node18-win-x64 --output dist/registration-qa.exe",
     "copy:browsers": "node scripts/copyPlaywrightBrowsers.js",
     "build:win:standalone": "npm run build:win && npm run copy:browsers",

@@ -2,6 +2,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('qaApp', {
   getInitialConfig: () => ipcRenderer.invoke('qa:get-initial-config'),
+  getAppControlState: () => ipcRenderer.invoke('qa:get-app-control-state'),
+  toggleAppControlState: () => ipcRenderer.invoke('qa:toggle-app-control-state'),
   saveConfig: (config) => ipcRenderer.invoke('qa:save-config', config),
   runTests: (config) => ipcRenderer.invoke('qa:run-tests', config),
   getCountryProxies: (countryCode) => ipcRenderer.invoke('qa:get-country-proxies', countryCode),
