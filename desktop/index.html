@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Creation</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f7fb;
+        color: #1a1d24;
+      }
+
+      .container {
+        max-width: 1080px;
+        margin: 24px auto;
+        background: #fff;
+        border: 1px solid #dde3ed;
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      input,
+      select,
+      textarea {
+        border: 1px solid #c7d1df;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+
+      textarea {
+        min-height: 64px;
+        resize: vertical;
+      }
+
+      .actions {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+      }
+
+      button {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      button.primary {
+        background: #2563eb;
+        color: #fff;
+      }
+
+      button.secondary {
+        background: #eef2ff;
+        color: #1f2a44;
+      }
+
+      #status {
+        margin-top: 12px;
+        font-weight: 600;
+      }
+
+      #logs {
+        margin-top: 12px;
+        border: 1px solid #d3dceb;
+        border-radius: 8px;
+        background: #0f172a;
+        color: #e5e7eb;
+        padding: 12px;
+        min-height: 220px;
+        max-height: 320px;
+        overflow: auto;
+        white-space: pre-wrap;
+        font-family: Consolas, monospace;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Account Creation App</h1>
+
+      <div class="grid">
+        <label class="field full">
+          <span>Project Name</span>
+          <input id="projectName" type="text" placeholder="my-campaign" />
+        </label>
+
+        <label class="field full">
+          <span>Target Website URL</span>
+          <input id="targetUrl" type="text" />
+        </label>
+
+        <label class="field">
+          <span>Email Domains (comma-separated)</span>
+          <input id="emailDomains" type="text" />
+        </label>
+
+        <label class="field">
+          <span>Proxy IPs (comma-separated, optional)</span>
+          <input id="proxies" type="text" />
+        </label>
+
+        <label class="field">
+          <span>Header IPs (X-Forwarded-For, comma-separated, optional)</span>
+          <input id="headerIps" type="text" />
+        </label>
+
+        <label class="field">
+          <span>Number of Submissions</span>
+          <input id="testSubmissions" type="number" min="1" value="1" />
+        </label>
+
+        <label class="field">
+          <span>Headless Mode</span>
+          <input id="headless" type="checkbox" checked />
+        </label>
+
+        <label class="field">
+          <span>Allowed Egress Countries (optional)</span>
+          <select id="allowedCountries" multiple size="8"></select>
+        </label>
+
+        <label class="field">
+          <span>Strict Geo Mode</span>
+          <input id="strictGeoMode" type="checkbox" />
+        </label>
+
+        <label class="field">
+          <span>Geo Lookup Attempts</span>
+          <input id="geoLookupAttempts" type="number" min="1" max="10" value="3" />
+        </label>
+
+        <label class="field">
+          <span>Email Selector</span>
+          <input id="emailSelector" type="text" />
+        </label>
+
+        <label class="field">
+          <span>Submit Selector</span>
+          <input id="submitSelector" type="text" />
+        </label>
+
+        <label class="field">
+          <span>Password Selector (optional)</span>
+          <input id="passwordSelector" type="text" />
+        </label>
+
+        <label class="field">
+          <span>Password Value</span>
+          <input id="passwordValue" type="text" />
+        </label>
+
+        <label class="field full">
+          <span>Browser Executable Path (optional)</span>
+          <input id="browserExecutablePath" type="text" placeholder="C:/Path/To/browser.exe" />
+        </label>
+
+        <label class="field full">
+          <span>Success Selector (optional)</span>
+          <input id="successSelector" type="text" />
+        </label>
+
+        <label class="field full">
+          <span>Error Selector (optional)</span>
+          <input id="errorSelector" type="text" />
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="saveConfigBtn" class="secondary">Save Config</button>
+        <button id="openResultsBtn" class="secondary">Open Results Folder</button>
+        <button id="runBtn" class="primary">Run Automation</button>
+      </div>
+
+      <div id="status">Ready.</div>
+      <div id="logs"></div>
+    </div>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>

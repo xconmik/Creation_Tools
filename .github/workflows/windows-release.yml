@@ -1,0 +1,73 @@
+name: Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag name to release (example: v1.0.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Build desktop app
+        run: npm run build:app
+
+      - name: Copy Playwright browsers
+        run: npm run copy:browsers
+
+      - name: Package release zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          New-Item -ItemType Directory -Force -Path release\Account-Creation-win-x64 | Out-Null
+
+          $portableExe = Get-ChildItem -Path dist -Filter 'Account Creation*.exe' -File |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+          if (-not $portableExe) {
+            throw 'Portable executable not found in dist folder.'
+          }
+
+          Copy-Item -Path $portableExe.FullName -Destination release\Account-Creation-win-x64\ -Force
+          Copy-Item -Path dist\ms-playwright -Destination release\Account-Creation-win-x64\ms-playwright -Recurse -Force
+
+          Compress-Archive -Path release\Account-Creation-win-x64\* -DestinationPath release\Account-Creation-win-x64.zip -Force
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Account-Creation-win-x64
+          path: release/Account-Creation-win-x64.zip
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
+          files: release/Account-Creation-win-x64.zip
+          generate_release_notes: true

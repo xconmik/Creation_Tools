@@ -1,0 +1,60 @@
+{
+  "name": "playwright-registration-qa",
+  "version": "1.0.0",
+  "description": "Account Creation automation app with Playwright and Excel export",
+  "main": "desktop/main.js",
+  "bin": "src/index.js",
+  "scripts": {
+    "start": "npm run start:app",
+    "start:app": "electron .",
+    "start:cli": "node src/index.js",
+    "build:win": "pkg . --targets node18-win-x64 --output dist/registration-qa.exe",
+    "copy:browsers": "node scripts/copyPlaywrightBrowsers.js",
+    "build:win:standalone": "npm run build:win && npm run copy:browsers",
+    "build:app": "electron-builder --win portable"
+  },
+  "keywords": [
+    "playwright",
+    "qa",
+    "automation",
+    "exceljs"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "exceljs": "^4.4.0",
+    "playwright": "1.48.2"
+  },
+  "devDependencies": {
+    "electron": "^37.3.1",
+    "electron-builder": "^26.0.12",
+    "pkg": "^5.8.1"
+  },
+  "build": {
+    "appId": "com.internalqa.registration",
+    "productName": "Account Creation",
+    "files": [
+      "desktop/**/*",
+      "src/**/*",
+      "config/**/*",
+      ".env.example",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
+  },
+  "pkg": {
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "assets": [
+      "config/*.json",
+      "node_modules/playwright/**/*",
+      "node_modules/playwright-core/**/*"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "projectName": "default-project",
+  "targetUrl": "https://example.com/register",
+  "emailDomains": ["hushmail.com"],
+  "proxies": [],
+  "headerIps": [],
+  "allowedCountries": [],
+  "strictGeoMode": false,
+  "geoLookupAttempts": 3,
+  "testSubmissions": 5,
+  "headless": true,
+  "registrationForm": {
+    "firstNameSelector": "input[name='firstName']",
+    "firstNameValue": "QA",
+    "lastNameSelector": "input[name='lastName']",
+    "lastNameValue": "Automation",
+    "emailSelector": "input[type='email']",
+    "passwordSelector": "input[type='password']",
+    "passwordValue": "Passw0rd!23",
+    "browserExecutablePath": "",
+    "submitSelector": "button[type='submit']",
+    "successSelector": "text=Thank you",
+    "errorSelector": "[role='alert'], .error"
+  }
+}
